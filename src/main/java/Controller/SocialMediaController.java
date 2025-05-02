@@ -93,14 +93,26 @@ public class SocialMediaController {
         ObjectMapper mapper = new ObjectMapper();
         Message message = mapper.readValue(ctx.body(), Message.class);
         int message_id = Integer.parseInt(ctx.pathParam("message_id"));
-        Message updatedMessage = messageService.updateMessage(message_id, message);
-        System.out.println(updatedMessage);
-        if(updatedMessage == null){
+        List<Account> accounts = accountService.getAllAccounts();
+        boolean match = false;
+        Message original = messageService.getMessageFromId(message_id);
+        if (original != null) {
+            for (Account a : accounts) {
+                if (a.getAccount_id() == original.getPosted_by()) {
+                    match = true;
+                    Message updatedMessage = messageService.updateMessage(message_id, message);
+                    System.out.println(updatedMessage);
+                    if(updatedMessage == null){
+                        ctx.status(400);
+                    }else{
+                        ctx.json(mapper.writeValueAsString(updatedMessage));
+                    }
+                    break;
+                }
+            }
+        }        
+        if (match == false)
             ctx.status(400);
-        }else{
-            ctx.json(mapper.writeValueAsString(updatedMessage));
-        }
-
     }
     
     private void deleteMessageHandler(Context ctx) throws JsonProcessingException {
