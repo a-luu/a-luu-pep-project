@@ -22,6 +22,12 @@ public class AccountService {
     }
 
     public Account addAccount(Account account) {
+        List<Account> data = accountDAO.getAllAccounts();
+        for (Account a : data) {
+            if (a.getAccount_id() == account.getAccount_id()) {
+                return null;
+            }
+        }
         if (account.getPassword().length() < 4 || account.getUsername() == "")
             return null;
         else

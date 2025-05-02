@@ -71,12 +71,22 @@ public class SocialMediaController {
     private void postMessageHandler(Context ctx) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         Message message = mapper.readValue(ctx.body(), Message.class);
-        Message addedMessage = messageService.addMessage(message);
-        if(addedMessage!=null){
-            ctx.json(mapper.writeValueAsString(addedMessage));
-        }else{
-            ctx.status(400);
+        List<Account> accounts = accountService.getAllAccounts();
+        boolean match = false;
+        for (Account a : accounts) {
+            if (a.getAccount_id() == message.getPosted_by()) {
+                match = true;
+                Message addedMessage = messageService.addMessage(message);
+                if(addedMessage!=null){
+                    ctx.json(mapper.writeValueAsString(addedMessage));
+                }else{
+                    ctx.status(400);
+                }
+                break;
+            }
         }
+        if (match == false)
+            ctx.status(400);
     }
 
     private void updateMessageHandler(Context ctx) throws JsonProcessingException {
